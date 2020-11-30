@@ -41,7 +41,9 @@ jobs:
         path: CustomLibrary_Adafruit_ADS1X15
 
     - name: Compile Arduino files
-      uses: ArminJo/arduino-test-compile@v2
+      uses: ArminJo/arduino-test-compile@v3
+      with:
+        arduino-board-fqbn: arduino:avr:micro
   
     - name: Upload Artifacts
       uses: actions/upload-artifact@v2
