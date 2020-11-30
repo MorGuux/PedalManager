@@ -1,6 +1,6 @@
 
 /*
-  Pedal.h - Pedal class 
+  Pedal.h - Pedal class
   Created by Morgan Gardner, November 26th, 2020.
   Released under the GPL-3.0 license.
 */
