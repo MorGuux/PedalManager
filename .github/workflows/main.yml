@@ -45,8 +45,8 @@ jobs:
       with:
         arduino-board-fqbn: arduino:avr:micro
   
-    - name: Upload Artifacts
+    - name: Upload Build files
       uses: actions/upload-artifact@v2
       with:
         name: build_output
-        path: ./ # or path/to/artifact
+        path: build_output/Simforge_Engineering_Pedals/build/*/[bootloader].hex
