@@ -57,8 +57,8 @@ jobs:
         name: build_output
         path: ./Simforge_Engineering_Pedals/build/*/Simforge_Engineering_Pedals.ino.with_bootloader.hex
 
-    - name: Download build files
-    - uses: actions/download-artifact@v2
+    - name: Download a Build Artifact
+      uses: actions/download-artifact@v2
       with:
         name: build_output
 
