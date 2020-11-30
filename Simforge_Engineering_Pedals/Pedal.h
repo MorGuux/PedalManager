@@ -90,7 +90,7 @@ class Pedal
       return pedalMapped;
     }
 
-    String getEEPROM()
+    String getValues()
     {
       String output = "";
       output += calibration.minDeadzone;

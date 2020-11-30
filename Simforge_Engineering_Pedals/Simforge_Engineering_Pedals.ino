@@ -91,7 +91,7 @@ void loop()
             Serial.println("c;" + (String)cmdMain.charAt(2) + ";f;saved");
             break;
           case 'r':   //requesting values
-            Serial.println("c;" + (String)cmdMain.charAt(2) + ";r;" + pedals[pedalIndex].getEEPROM());
+            Serial.println("c;" + (String)cmdMain.charAt(2) + ";r;" + pedals[pedalIndex].getValues());
             break;
           case 'z':   //reset calibration values
             pedals[pedalIndex].setDeadzone(0, true);
