@@ -49,4 +49,4 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: build_output
-        path: build_output/Simforge_Engineering_Pedals/build/[bootloader].hex
+        path: build_output/Simforge_Engineering_Pedals/build/*/Simforge_Engineering_Pedals.ino.with_bootloader.hex
