@@ -50,7 +50,7 @@ void loop()
             Serial.println("i;v;" + firmwareVersion);
             break;
 
-          case 'c':  //company name request
+          case 'c':  //company name request 
             Serial.println("i;c;Simforge Engineering");
             break;
 
