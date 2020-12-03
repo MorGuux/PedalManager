@@ -1,6 +1,6 @@
 
 /*
-  Pedal.h - Pedal class 
+  Pedal.h - Pedal class
   Created by Morgan Gardner, November 26th, 2020.
   Released under the GPL-3.0 license.
 */
@@ -25,37 +25,37 @@ class Pedal
         pedalFilter.begin(SMOOTHED_EXPONENTIAL, calibration.smoothingValue);
     }
 
-    void setDeadzone(uint16_t value, bool upper)
+    void setDeadzone(uint16_t dzValue, bool dzUpper)
     {
-      if (upper)
+      if (dzUpper)
       {
-        calibration.maxDeadzone = value;
+        calibration.maxDeadzone = dzValue;
         saveEEPROM();
       }
       else
       {
-        calibration.minDeadzone = value;
+        calibration.minDeadzone = dzValue;
         saveEEPROM();
       }
     }
 
-    void setRange(uint16_t, bool upper)
+    void setRange(uint16_t rValue, bool rUpper)
     {
-      if (upper)
+      if (rUpper)
       {
-        calibration.maxRange = value;
+        calibration.maxRange = rValue;
         saveEEPROM();
       }
       else
       {
-        calibration.minRange = value;
+        calibration.minRange = rValue;
         saveEEPROM();
       }
     }
 
-    void setFilter(uint16_t value)
+    void setFilter(uint16_t fValue)
     {
-      calibration.smoothingValue = value;
+      calibration.smoothingValue = fValue;
       saveEEPROM();
     }
 
@@ -90,14 +90,14 @@ class Pedal
       return pedalMapped;
     }
 
-    String getValues()
+    String getEEPROM()
     {
       String output = "";
-      output += calibration.minDeadzone;
-      output += ";" + calibration.maxDeadzone;
-      output += ";" + calibration.minRange;
-      output += ";" + calibration.maxRange;
-      output += ";" + calibration.smoothingValue;
+      output += (String)calibration.minDeadzone;
+      output += ";" + (String)calibration.maxDeadzone;
+      output += ";" + (String)calibration.minRange;
+      output += ";" + (String)calibration.maxRange;
+      output += ";" + (String)calibration.smoothingValue;
       return output;
     }
 

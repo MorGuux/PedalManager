@@ -50,7 +50,7 @@ void loop()
             Serial.println("i;v;" + firmwareVersion);
             break;
 
-          case 'c':  //company name request 
+          case 'c':  //company name request
             Serial.println("i;c;Simforge Engineering");
             break;
 
@@ -91,7 +91,7 @@ void loop()
             Serial.println("c;" + (String)cmdMain.charAt(2) + ";f;saved");
             break;
           case 'r':   //requesting values
-            Serial.println("c;" + (String)cmdMain.charAt(2) + ";r;" + pedals[pedalIndex].getValues());
+            Serial.println("c;" + (String)cmdMain.charAt(2) + ";r;" + pedals[pedalIndex].getEEPROM());
             break;
           case 'z':   //reset calibration values
             pedals[pedalIndex].setDeadzone(0, true);
