@@ -12,14 +12,18 @@ bool serialOpen = false;
 
 String firmwareVersion = "1.0.0";
 
+unsigned long ldPreviousMillis = 0;
+const long ldInterval = 16;           //live data refresh rate
+
 void setup()
 {
 
   //Initialize Joystick and ADS module
   Joystick.begin();
   ads.begin();
+  ads.setSPS(ADS1115_DR_860SPS);
 
-  Serial.begin(115200);
+  Serial.begin(250000);
 
   ads.setGain(GAIN_TWOTHIRDS);
 
@@ -31,6 +35,8 @@ void setup()
 
 void loop()
 {
+
+  unsigned long currentMillis = millis();
 
   Joystick.setThrottle(pedals[0].updatePedal(ads));
   Joystick.setRxAxis(pedals[1].updatePedal(ads));
@@ -61,9 +67,9 @@ void loop()
         break;
 
       case 'c':       //calibration
-      
-          byte pedalIndex = atoi(cmdMain.charAt(2));
-          uint16_t data = cmdMain.substring(cmdMain.length() - 6, cmdMain.length() - 1).toInt();
+
+        byte pedalIndex = atoi(cmdMain.charAt(2));
+        uint16_t data = cmdMain.substring(cmdMain.length() - 6, cmdMain.length() - 1).toInt();
         switch (cmdMain.charAt(4))
         {
           case 'a':   //upper deadzone
@@ -108,5 +114,11 @@ void loop()
 
 
   if (serialOpen)
-    Serial.println("l;" + (String)pedals[0].getValue() + ";" + (String)pedals[1].getValue() + ";" + (String)pedals[2].getValue()); //live data
+  {
+    if (currentMillis - ldPreviousMillis >= ldInterval)
+    {
+      ldPreviousMillis = currentMillis;
+      Serial.println("l;" + (String)pedals[0].getValue() + ";" + (String)pedals[1].getValue() + ";" + (String)pedals[2].getValue()); //live data
+    }
+  }
 }
