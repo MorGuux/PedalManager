@@ -64,7 +64,7 @@ jobs:
         path: build
 
     - name: Zip build ouput
-      run: zip buildoutput.zip build
+      run: zip -r buildoutput.zip build
 
     - name: Automatic Releases
       uses: marvinpinto/action-automatic-releases@v1.1.0
