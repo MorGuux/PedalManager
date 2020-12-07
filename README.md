@@ -4,6 +4,11 @@
 
 ADS1115-connected pedals, controlled with software. EEPROM-saved calibration values.
 
+## Dependancies
+- Smoothed (https://github.com/MattFryer/Smoothed)
+- Joystick (https://github.com/MHeironimus/ArduinoJoystickLibrary)
+- ADSX115 fork (https://github.com/soligen2010/Adafruit_ADS1X15)
+
 | PC | Arduino reply | Description |
 | --- | --- | --- |
 | "i;v\n" | "i;v;1.0.0\r\n" | request firmware version |
