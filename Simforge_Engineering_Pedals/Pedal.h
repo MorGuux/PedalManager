@@ -21,8 +21,7 @@ class Pedal
     {
       this->pedalIndex = pedalIndex;
       loadEEPROM();
-      if (calibration.smoothingValue != 0)
-        pedalFilter.begin(SMOOTHED_EXPONENTIAL, calibration.smoothingValue);
+      enableFilter();
     }
 
     void setDeadzone(uint16_t dzValue, bool dzUpper)
@@ -57,6 +56,7 @@ class Pedal
     {
       calibration.smoothingValue = fValue;
       saveEEPROM();
+      enableFilter();
     }
 
     uint16_t getValue()
@@ -113,6 +113,12 @@ class Pedal
     };
 
     CalibrationValues calibration;
+
+    void enableFilter()
+    {
+        if (calibration.smoothingValue != 0)
+        pedalFilter.begin(SMOOTHED_EXPONENTIAL, calibration.smoothingValue);
+    }
 
     void loadEEPROM()
     {
