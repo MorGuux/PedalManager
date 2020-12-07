@@ -42,7 +42,7 @@ jobs:
     - name: Checkout Adafruit_ADS1X15 library
       uses: actions/checkout@v2
       with:
-        repository: adafruit/Adafruit_ADS1X15
+        repository: soligen2010/Adafruit_ADS1X15
         ref: master
         path: CustomLibrary_Adafruit_ADS1X15
 
