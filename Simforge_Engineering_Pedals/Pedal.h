@@ -11,7 +11,7 @@
 #include "Arduino.h"
 #include <Smoothed.h>
 #include <EEPROM.h>
-#include "HX711.h"
+//#include "HX711.h"
 
 enum PedalType
 {
