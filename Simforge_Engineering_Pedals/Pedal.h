@@ -11,14 +11,23 @@
 #include "Arduino.h"
 #include <Smoothed.h>
 #include <EEPROM.h>
+#include "HX711.h"
+
+enum PedalType
+{
+  Pot,
+  ADS,
+  LoadCell
+};
 
 class Pedal
 {
 
   public:
     //initialise pedal
-    Pedal(byte pedalIndex)
+    Pedal(byte pedalIndex, PedalType type)
     {
+      this->pedalType = type;
       this->pedalIndex = pedalIndex;
       loadEEPROM();
       enableFilter();
@@ -64,9 +73,25 @@ class Pedal
       return this->value;
     }
 
-    uint16_t updatePedal(Adafruit_ADS1115 ads)
+    uint16_t readPedalValue(byte analogInput)
     {
-      uint16_t pedalRaw = ads.readADC_SingleEnded(pedalIndex);
+      updatePedal(analogRead(analogInput));
+    }
+
+    uint16_t readPedalValue(Adafruit_ADS1115 ads)
+    {
+      updatePedal(ads.readADC_SingleEnded(pedalIndex));
+    }
+
+    /*uint16_t readPedalValue(HX711 loadcell)
+    {
+      updatePedal(loadcell.read());
+    }
+    */
+
+    uint16_t updatePedal(uint16_t pedalRaw)
+    {
+
       if (calibration.smoothingValue != 0)
       {
         pedalFilter.add(pedalRaw);
@@ -84,7 +109,7 @@ class Pedal
         pedalOutput = pedalRaw;
 
 
-      uint16_t pedalMapped = map(pedalOutput, calibration.minRange + calibration.minDeadzone, calibration.maxRange - calibration.maxDeadzone, 0, 32767);
+      uint16_t pedalMapped = map(pedalOutput, calibration.minRange + calibration.minDeadzone, calibration.maxRange - calibration.maxDeadzone, 0, 65535);
 
       this->value = pedalMapped;
       return pedalMapped;
@@ -116,7 +141,7 @@ class Pedal
 
     void enableFilter()
     {
-        if (calibration.smoothingValue != 0)
+      if (calibration.smoothingValue != 0)
         pedalFilter.begin(SMOOTHED_EXPONENTIAL, calibration.smoothingValue);
     }
 
@@ -137,6 +162,7 @@ class Pedal
 
     Smoothed <uint16_t> pedalFilter;
 
+    PedalType pedalType;
 };
 
 #endif

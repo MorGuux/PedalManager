@@ -6,35 +6,40 @@
 Joystick_ Joystick;
 Adafruit_ADS1115 ads;
 
-String firmwareVersion = "1.0.2";
+String firmwareVersion = "1.0.3";
 
 ///<!---WARNING---!>///
 /* Please be careful with these settings!
- * SAMPLE_GAIN set incorrectly can destroy your ADS module!
- * Please ensure you have read the documentation for the
- * ADS1115 module and understand the risks involved.
- * GAIN_TWOTHIRDS supports +/- 6.144V (this is the safest choice!)
- * If your input voltage exceeds this range, it can destroy the module.
- * 
- * +/-6.144V range = GAIN_TWOTHIRDS
- * +/-4.096V range = GAIN_ONE
- * +/-2.048V range = GAIN_TWO
- * +/-1.024V range = GAIN_FOUR
- * +/-0.512V range = GAIN_EIGHT
- * +/-0.256V range = GAIN_SIXTEEN
- */
+   SAMPLE_GAIN set incorrectly can destroy your ADS module!
+   Please ensure you have read the documentation for the
+   ADS1115 module and understand the risks involved.
+   GAIN_TWOTHIRDS supports +/- 6.144V (this is the safest choice!)
+   If your input voltage exceeds this range, it can destroy the module.
+
+   +/-6.144V range = GAIN_TWOTHIRDS
+   +/-4.096V range = GAIN_ONE
+   +/-2.048V range = GAIN_TWO
+   +/-1.024V range = GAIN_FOUR
+   +/-0.512V range = GAIN_EIGHT
+   +/-0.256V range = GAIN_SIXTEEN
+*/
 adsGain_t SAMPLE_GAIN = GAIN_TWOTHIRDS;
 
 //Sample rate of the ADS module, set at 860 per second
 adsSPS_t SAMPLE_RATE = ADS1115_DR_860SPS;
 
+byte pedalCount = 3;
+Pedal pedals[3] = {Pedal(0, ADS), Pedal(1, ADS), Pedal(2, ADS)};
 
-Pedal pedals[] = {Pedal(0), Pedal(1), Pedal(2)};
+//const int LOADCELL_DOUT_PIN = 2;
+//const int LOADCELL_SCK_PIN = 3;
 
 bool serialOpen = false;
 
 unsigned long ldPreviousMillis = 0;
 const long ldInterval = 16;           //live data refresh rate
+
+//HX711 loadCell;
 
 void setup()
 {
@@ -45,11 +50,13 @@ void setup()
   ads.setSPS(SAMPLE_RATE);
   ads.setGain(SAMPLE_GAIN);
 
+  //loadCell.begin(LOADCELL_DOUT_PIN, LOADCELL_SCK_PIN);
+
   Serial.begin(250000);
 
-  Joystick.setThrottleRange(0, 32767);
-  Joystick.setRxAxisRange(0, 32767);
-  Joystick.setRyAxisRange(0, 32767);
+  Joystick.setThrottleRange(0, 65535);
+  Joystick.setRxAxisRange(0, 65535);
+  Joystick.setRyAxisRange(0, 65535);
 
 }
 
@@ -58,9 +65,9 @@ void loop()
 
   unsigned long currentMillis = millis();
 
-  Joystick.setThrottle(pedals[0].updatePedal(ads));
-  Joystick.setRxAxis(pedals[1].updatePedal(ads));
-  Joystick.setRyAxis(pedals[2].updatePedal(ads));
+  Joystick.setThrottle(pedals[0].readPedalValue(ads));
+  Joystick.setRxAxis(pedals[1].readPedalValue(ads));
+  Joystick.setRyAxis(pedals[2].readPedalValue(ads));
 
   if (Serial.available() > 0)
   {
@@ -81,7 +88,7 @@ void loop()
             break;
 
           case 'o':  //toggle serial connection status
-            serialOpen = !serialOpen;
+            serialOpen = cmdMain.charAt(4) == '1' ? true : false;
             break;
         }
         break;
@@ -123,7 +130,7 @@ void loop()
             pedals[pedalIndex].setDeadzone(0, true);
             pedals[pedalIndex].setDeadzone(0, false);
             pedals[pedalIndex].setRange(0, false);
-            pedals[pedalIndex].setRange(32767, true);
+            pedals[pedalIndex].setRange(65535, true);
             pedals[pedalIndex].setFilter(0);
             Serial.println("c;" + (String)cmdMain.charAt(2) + ";z;reset");
             break;
@@ -138,7 +145,13 @@ void loop()
     if (currentMillis - ldPreviousMillis >= ldInterval)
     {
       ldPreviousMillis = currentMillis;
-      Serial.println("l;" + (String)pedals[0].getValue() + ";" + (String)pedals[1].getValue() + ";" + (String)pedals[2].getValue()); //live data
+      String liveDataOutput = "l;";
+      liveDataOutput += (String)pedals[0].getValue();
+      
+      for (int i = 1; i < pedalCount; i++)
+        liveDataOutput += ";" + (String)pedals[i].getValue();
+        
+      Serial.println(liveDataOutput);
     }
   }
 }
