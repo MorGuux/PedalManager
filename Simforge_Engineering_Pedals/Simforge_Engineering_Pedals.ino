@@ -37,7 +37,7 @@ Pedal pedals[3] = {Pedal(0, ADS), Pedal(1, ADS), Pedal(2, ADS)};
 bool serialOpen = false;
 
 unsigned long ldPreviousMillis = 0;
-const long ldInterval = 16;           //live data refresh rate
+const long ldInterval = 32;           //live data refresh rate
 
 //HX711 loadCell;
 
@@ -54,20 +54,24 @@ void setup()
 
   Serial.begin(250000);
 
-  Joystick.setThrottleRange(0, 65535);
-  Joystick.setRxAxisRange(0, 65535);
-  Joystick.setRyAxisRange(0, 65535);
+  Joystick.setThrottleRange(0, 32767);
+  Joystick.setRxAxisRange(0, 32767);
+  Joystick.setRyAxisRange(0, 32767);
 
 }
 
 void loop()
 {
 
+  pedals[0].readPedalValue(ads);
+  pedals[1].readPedalValue(ads);
+  pedals[2].readPedalValue(ads);
+
   unsigned long currentMillis = millis();
 
-  Joystick.setThrottle(pedals[0].readPedalValue(ads));
-  Joystick.setRxAxis(pedals[1].readPedalValue(ads));
-  Joystick.setRyAxis(pedals[2].readPedalValue(ads));
+  Joystick.setThrottle(pedals[0].getValue());
+  Joystick.setRxAxis(pedals[1].getValue());
+  Joystick.setRyAxis(pedals[2].getValue());
 
   if (Serial.available() > 0)
   {
@@ -95,47 +99,64 @@ void loop()
 
       case 'c':       //calibration
 
-        byte pedalIndex = atoi(cmdMain.charAt(2));
-        uint16_t data = cmdMain.substring(cmdMain.length() - 6, cmdMain.length() - 1).toInt();
-        switch (cmdMain.charAt(4))
+        if (cmdMain.charAt(2) == 'r') //request all calibration settings from all pedals
         {
-          case 'a':   //upper deadzone
-            pedals[pedalIndex].setDeadzone(data, true);   //update upper deadzone
-            Serial.println("c;" + (String)cmdMain.charAt(2) + ";a;saved");
-            break;
-
-          case 'b':   //lower deadzone
-            pedals[pedalIndex].setDeadzone(data, false);   //update lower deadzone
-            Serial.println("c;" + (String)cmdMain.charAt(2) + ";b;saved");
-            break;
-
-          case 'c':   //upper range
-            pedals[pedalIndex].setRange(data, true);   //update upper range
-            Serial.println("c;" + (String)cmdMain.charAt(2) + ";c;saved");
-            break;
-
-          case 'd':   //lower range
-            pedals[pedalIndex].setRange(data, false);   //update lower range
-            Serial.println("c;" + (String)cmdMain.charAt(2) + ";d;saved");
-            break;
-
-          case 'f':   //filter
-            pedals[pedalIndex].setFilter(data);   //update filter
-            Serial.println("c;" + (String)cmdMain.charAt(2) + ";f;saved");
-            break;
-          case 'r':   //requesting values
-            Serial.println("c;" + (String)cmdMain.charAt(2) + ";r;" + pedals[pedalIndex].getEEPROM());
-            break;
-          case 'z':   //reset calibration values
-            pedals[pedalIndex].setDeadzone(0, true);
-            pedals[pedalIndex].setDeadzone(0, false);
-            pedals[pedalIndex].setRange(0, false);
-            pedals[pedalIndex].setRange(65535, true);
-            pedals[pedalIndex].setFilter(0);
-            Serial.println("c;" + (String)cmdMain.charAt(2) + ";z;reset");
-            break;
+          String calibrationValues = "";
+          calibrationValues += (String)pedals[0].getEEPROM();
+          for (int i = 1; i < pedalCount; i++)
+            calibrationValues += ":" + (String)pedals[i].getEEPROM();
+          Serial.println(calibrationValues);
         }
-        break;
+        else if (cmdMain.charAt(2) == 's')  //save all calibration settings to EEPROM
+        {
+            for (int i = 0; i < pedalCount; i++)
+            pedals[i].saveEEPROM();
+            Serial.println("c;s;saved");
+        }
+        else
+        {
+          byte pedalIndex = atoi(cmdMain.charAt(2));
+          uint16_t data = cmdMain.substring(cmdMain.length() - 6, cmdMain.length() - 1).toInt();
+          switch (cmdMain.charAt(4))
+          {
+            case 'a':   //upper deadzone
+              pedals[pedalIndex].setDeadzone(data, true);   //update upper deadzone
+              Serial.println("c;" + (String)cmdMain.charAt(2) + ";a;saved");
+              break;
+
+            case 'b':   //lower deadzone
+              pedals[pedalIndex].setDeadzone(data, false);   //update lower deadzone
+              Serial.println("c;" + (String)cmdMain.charAt(2) + ";b;saved");
+              break;
+
+            case 'c':   //upper range
+              pedals[pedalIndex].setRange(data, true);   //update upper range
+              Serial.println("c;" + (String)cmdMain.charAt(2) + ";c;saved");
+              break;
+
+            case 'd':   //lower range
+              pedals[pedalIndex].setRange(data, false);   //update lower range
+              Serial.println("c;" + (String)cmdMain.charAt(2) + ";d;saved");
+              break;
+
+            case 'f':   //filter
+              pedals[pedalIndex].setFilter(data);   //update filter
+              Serial.println("c;" + (String)cmdMain.charAt(2) + ";f;saved");
+              break;
+            case 'r':   //requesting values
+              Serial.println("c;" + (String)cmdMain.charAt(2) + ";r;" + pedals[pedalIndex].getEEPROM());
+              break;
+            case 'z':   //reset calibration values
+              pedals[pedalIndex].setDeadzone(0, true);
+              pedals[pedalIndex].setDeadzone(0, false);
+              pedals[pedalIndex].setRange(0, false);
+              pedals[pedalIndex].setRange(32767, true);
+              pedals[pedalIndex].setFilter(0);
+              Serial.println("c;" + (String)cmdMain.charAt(2) + ";z;reset");
+              break;
+          }
+          break;
+        }
     }
   }
 
@@ -147,10 +168,8 @@ void loop()
       ldPreviousMillis = currentMillis;
       String liveDataOutput = "l;";
       liveDataOutput += (String)pedals[0].getValue();
-      
       for (int i = 1; i < pedalCount; i++)
         liveDataOutput += ";" + (String)pedals[i].getValue();
-        
       Serial.println(liveDataOutput);
     }
   }

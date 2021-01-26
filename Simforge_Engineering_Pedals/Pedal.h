@@ -38,12 +38,10 @@ class Pedal
       if (dzUpper)
       {
         calibration.maxDeadzone = dzValue;
-        saveEEPROM();
       }
       else
       {
         calibration.minDeadzone = dzValue;
-        saveEEPROM();
       }
     }
 
@@ -52,19 +50,16 @@ class Pedal
       if (rUpper)
       {
         calibration.maxRange = rValue;
-        saveEEPROM();
       }
       else
       {
         calibration.minRange = rValue;
-        saveEEPROM();
       }
     }
 
     void setFilter(uint16_t fValue)
     {
       calibration.smoothingValue = fValue;
-      saveEEPROM();
       enableFilter();
     }
 
@@ -73,14 +68,22 @@ class Pedal
       return this->value;
     }
 
-    uint16_t readPedalValue(byte analogInput)
+    uint16_t getRawValue()
     {
-      updatePedal(analogRead(analogInput));
+      return this->rawValue;
     }
+
+    /*uint16_t readPedalValue(byte analogInput)
+    {
+      rawValue = map(analogRead(analogInput), 0, 1023, 0, 65535);
+      updatePedal(rawValue);
+    }
+    */
 
     uint16_t readPedalValue(Adafruit_ADS1115 ads)
     {
-      updatePedal(ads.readADC_SingleEnded(pedalIndex));
+      rawValue = ads.readADC_SingleEnded(pedalIndex);
+      updatePedal(rawValue);
     }
 
     /*uint16_t readPedalValue(HX711 loadcell)
@@ -91,7 +94,6 @@ class Pedal
 
     uint16_t updatePedal(uint16_t pedalRaw)
     {
-
       if (calibration.smoothingValue != 0)
       {
         pedalFilter.add(pedalRaw);
@@ -109,7 +111,7 @@ class Pedal
         pedalOutput = pedalRaw;
 
 
-      uint16_t pedalMapped = map(pedalOutput, calibration.minRange + calibration.minDeadzone, calibration.maxRange - calibration.maxDeadzone, 0, 65535);
+      uint16_t pedalMapped = map(pedalOutput, calibration.minRange + calibration.minDeadzone, calibration.maxRange - calibration.maxDeadzone, 0, 32767);
 
       this->value = pedalMapped;
       return pedalMapped;
@@ -124,6 +126,12 @@ class Pedal
       output += ";" + (String)calibration.maxRange;
       output += ";" + (String)calibration.smoothingValue;
       return output;
+    }
+
+    void saveEEPROM()
+    {
+      int eepromLocation = pedalIndex * sizeof(CalibrationValues);
+      EEPROM.put(eepromLocation, calibration);
     }
 
   private:
@@ -151,14 +159,9 @@ class Pedal
       EEPROM.get(eepromLocation, calibration);
     }
 
-    void saveEEPROM()
-    {
-      int eepromLocation = pedalIndex * sizeof(CalibrationValues);
-      EEPROM.put(eepromLocation, calibration);
-    }
-
     byte pedalIndex;
     uint16_t value;
+    uint16_t rawValue;
 
     Smoothed <uint16_t> pedalFilter;
 
