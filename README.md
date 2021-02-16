@@ -8,12 +8,13 @@ ADS1115-connected pedals, controlled with software. EEPROM-saved calibration val
 - Smoothed (https://github.com/MattFryer/Smoothed)
 - Joystick (https://github.com/MHeironimus/ArduinoJoystickLibrary)
 - ADSX115 fork (https://github.com/soligen2010/Adafruit_ADS1X15)
+- MultiMap (https://github.com/RobTillaart/MultiMap)
 
 | PC | Arduino reply | Description |
 | --- | --- | --- |
 | "i;v\n" | "i;v;1.0.0\r\n" | request firmware version |
 |"i;c\n" | "i;c;Simforge Engineering\r\n" | request company name |
-|"i;o\n" | "l;1234;4567;7890\r\n" | toggle live data |
+|"i;o;1\n" | "l;1234;4567;7890\r\n" | toggle live data (1 = on, 0 = off)|
 |"c;0;a;00000\n" | "c;0;a;saved\r\n" | set upper deadzone for pedal 0 to 00000 |
 |"c;1;b;01234\n" | "c;0;a;saved\r\n" | set lower deadzone for pedal 1 to 1234 |
 |"c;1;c;32767\n" | "c;0;a;saved\r\n" | set upper range for pedal 1 to 32767 |
