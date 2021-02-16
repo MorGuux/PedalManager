@@ -11,7 +11,8 @@
 #include "Arduino.h"
 #include <Smoothed.h>
 #include <EEPROM.h>
-//#include "HX711.h"
+#include "HX711.h"
+#include <MultiMap.h>
 
 enum PedalType
 {
@@ -63,6 +64,11 @@ class Pedal
       enableFilter();
     }
 
+    void setMapping(float values[])
+    {
+      calibration.smoothingValue = values;
+    }
+
     uint16_t getValue()
     {
       return this->value;
@@ -73,12 +79,11 @@ class Pedal
       return this->rawValue;
     }
 
-    /*uint16_t readPedalValue(byte analogInput)
+    uint16_t readPedalValue(byte analogInput)
     {
-      rawValue = map(analogRead(analogInput), 0, 1023, 0, 65535);
+      rawValue = map(analogRead(analogInput), 0, 1023, 0, 32767);
       updatePedal(rawValue);
     }
-    */
 
     uint16_t readPedalValue(Adafruit_ADS1115 ads)
     {
@@ -86,32 +91,37 @@ class Pedal
       updatePedal(rawValue);
     }
 
-    /*uint16_t readPedalValue(HX711 loadcell)
+    uint16_t readPedalValue(HX711 loadcell)
     {
       updatePedal(loadcell.read());
     }
-    */
 
     uint16_t updatePedal(uint16_t pedalRaw)
     {
+      //filter pedal value if applicable
       if (calibration.smoothingValue != 0)
       {
         pedalFilter.add(pedalRaw);
         pedalRaw = pedalFilter.get();
       }
+      
       uint16_t pedalOutput;
 
+      //constrain pedal max
       if (pedalRaw > calibration.maxRange - calibration.maxDeadzone)
         pedalOutput = calibration.maxRange - calibration.maxDeadzone;
-
+      //constrain pedal min
       else if (pedalRaw < calibration.minRange + calibration.minDeadzone)
         pedalOutput = calibration.minRange + calibration.minDeadzone;
-
+        
       else
         pedalOutput = pedalRaw;
 
+      float pedalMappedRaw = mapf(pedalOutput, calibration.minRange + calibration.minDeadzone, calibration.maxRange - calibration.maxDeadzone, 0, 100);  //map to percentage
 
-      uint16_t pedalMapped = map(pedalOutput, calibration.minRange + calibration.minDeadzone, calibration.maxRange - calibration.maxDeadzone, 0, 32767);
+      float inputMap[6] = {0, 20, 40, 60, 80, 100}; //input map (percentage values)
+
+      uint16_t pedalMapped = mapf(multiMap<float>(pedalMappedRaw, inputMap, calibration.outputMapping, 6), 0, 100, 0, 32767);  //add mapping function, and convert to 15bit
 
       this->value = pedalMapped;
       return pedalMapped;
@@ -143,6 +153,7 @@ class Pedal
       uint16_t minRange;
       uint16_t maxRange;
       uint16_t smoothingValue;
+      float outputMapping[6]; //percentage (0% to 100%)
     };
 
     CalibrationValues calibration;
@@ -151,6 +162,11 @@ class Pedal
     {
       if (calibration.smoothingValue != 0)
         pedalFilter.begin(SMOOTHED_EXPONENTIAL, calibration.smoothingValue);
+    }
+
+    float mapf(float x, float in_min, float in_max, float out_min, float out_max)
+    {
+      return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
     }
 
     void loadEEPROM()

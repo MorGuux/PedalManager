@@ -52,7 +52,7 @@ void setup()
 
   //loadCell.begin(LOADCELL_DOUT_PIN, LOADCELL_SCK_PIN);
 
-  Serial.begin(250000);
+  Serial.begin(500000);
 
   Joystick.setThrottleRange(0, 32767);
   Joystick.setRxAxisRange(0, 32767);
@@ -75,7 +75,7 @@ void loop()
 
   if (Serial.available() > 0)
   {
-    String cmdMain = Serial.readStringUntil("\n");   //cmd
+    String cmdMain = Serial.readStringUntil('\n');   //cmd
 
     switch (cmdMain.charAt(0))
     {
@@ -150,8 +150,10 @@ void loop()
               pedals[pedalIndex].setDeadzone(0, true);
               pedals[pedalIndex].setDeadzone(0, false);
               pedals[pedalIndex].setRange(0, false);
-              pedals[pedalIndex].setRange(32767, true);
+              pedals[pedalIndex].setRange(65535, true);
               pedals[pedalIndex].setFilter(0);
+              float defaultMap[] = {0, 20, 40, 60, 80, 100};
+              pedals[pedalIndex].setMapping(defaultMap);
               Serial.println("c;" + (String)cmdMain.charAt(2) + ";z;reset");
               break;
           }
@@ -169,7 +171,7 @@ void loop()
       String liveDataOutput = "l;";
       liveDataOutput += (String)pedals[0].getValue();
       for (int i = 1; i < pedalCount; i++)
-        liveDataOutput += ";" + (String)pedals[i].getValue();
+        liveDataOutput += ";" + (String)pedals[i].getRawValue();
       Serial.println(liveDataOutput);
     }
   }
