@@ -7,7 +7,7 @@
 ### Supported hardware
  * analogRead (0-1023 10-bit)
  * ADS1115 (0-32767 15-bit)
- * HX711 load cell (0-131070 ~17-bit noise-free)
+ * HX711 load cell (0-131070 ~17-bit noise-free) (downscaled to 15-bit for HID)
 
 ### Features
 * EEPROM-saved calibration values.
