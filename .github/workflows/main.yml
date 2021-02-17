@@ -43,6 +43,20 @@ jobs:
         repository: soligen2010/Adafruit_ADS1X15
         ref: master
         path: CustomLibrary_Adafruit_ADS1X15
+        
+    - name: Checkout MultiMap library
+      uses: actions/checkout@v2
+      with:
+        repository: RobTillaart/MultiMap
+        ref: master
+        path: CustomLibrary_RobTillaart_MultiMap
+        
+    - name: Checkout HX711 library
+      uses: actions/checkout@v2
+      with:
+        repository: bogde/HX711
+        ref: master
+        path: CustomLibrary_bogde_HX711
 
     - name: Compile Arduino files
       uses: ArminJo/arduino-test-compile@v3
