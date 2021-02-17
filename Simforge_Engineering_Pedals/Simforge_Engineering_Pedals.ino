@@ -37,7 +37,7 @@ Pedal pedals[3] = {Pedal(0, ADS), Pedal(1, ADS), Pedal(2, ADS)};
 bool serialOpen = false;
 
 unsigned long ldPreviousMillis = 0;
-const long ldInterval = 32;           //live data refresh rate
+const long ldInterval = 16;           //live data refresh rate
 
 //HX711 loadCell;
 
@@ -169,7 +169,7 @@ void loop()
     {
       ldPreviousMillis = currentMillis;
       String liveDataOutput = "l;";
-      liveDataOutput += (String)pedals[0].getValue();
+      liveDataOutput += (String)pedals[0].getRawValue();
       for (int i = 1; i < pedalCount; i++)
         liveDataOutput += ";" + (String)pedals[i].getRawValue();
       Serial.println(liveDataOutput);
