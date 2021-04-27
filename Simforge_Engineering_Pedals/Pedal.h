@@ -11,24 +11,15 @@
 #include "Arduino.h"
 #include <Smoothed.h>
 #include <EEPROM.h>
-#include "HX711.h"
 #include <MultiMap.h>
-
-enum PedalType
-{
-  Pot,
-  ADS,
-  LoadCell
-};
 
 class Pedal
 {
 
   public:
     //initialise pedal
-    Pedal(byte pedalIndex, PedalType type)
+    Pedal(byte pedalIndex)
     {
-      this->pedalType = type;
       this->pedalIndex = pedalIndex;
       loadEEPROM();
       enableFilter();
@@ -77,23 +68,6 @@ class Pedal
     uint16_t getRawValue()
     {
       return this->rawValue;
-    }
-
-    uint16_t readPedalValue(byte analogInput)
-    {
-      rawValue = map(analogRead(analogInput), 0, 1023, 0, 32767);
-      updatePedal(rawValue);
-    }
-
-    uint16_t readPedalValue(Adafruit_ADS1115 ads)
-    {
-      rawValue = ads.readADC_SingleEnded(pedalIndex);
-      updatePedal(rawValue);
-    }
-
-    uint16_t readPedalValue(HX711 loadcell)
-    {
-      updatePedal(loadcell.read());
     }
 
     uint16_t updatePedal(uint16_t pedalRaw)
@@ -180,8 +154,6 @@ class Pedal
     uint16_t rawValue;
 
     Smoothed <uint16_t> pedalFilter;
-
-    PedalType pedalType;
 };
 
 #endif

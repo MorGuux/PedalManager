@@ -29,7 +29,7 @@ adsGain_t SAMPLE_GAIN = GAIN_TWOTHIRDS;
 adsSPS_t SAMPLE_RATE = ADS1115_DR_860SPS;
 
 byte pedalCount = 3;
-Pedal pedals[3] = {Pedal(0, ADS), Pedal(1, ADS), Pedal(2, ADS)};
+Pedal pedals[3] = {Pedal(0), Pedal(1), Pedal(2)};
 
 //const int LOADCELL_DOUT_PIN = 2;
 //const int LOADCELL_SCK_PIN = 3;
@@ -43,7 +43,6 @@ const long ldInterval = 16;           //live data refresh rate
 
 void setup()
 {
-
   //Initialize Joystick and ADS module
   Joystick.begin();
   ads.begin();
@@ -63,9 +62,25 @@ void setup()
 void loop()
 {
 
-  pedals[0].readPedalValue(ads);
-  pedals[1].readPedalValue(ads);
-  pedals[2].readPedalValue(ads);
+  /*
+  //analogreads
+  pedals[0].updatePedal(map(analogRead(0), 0, 1023, 0, 32767));
+  pedals[1].updatePedal(map(analogRead(1), 0, 1023, 0, 32767));
+  pedals[2].updatePedal(map(analogRead(2), 0, 1023, 0, 32767));
+  */
+
+  //ads1115
+  pedals[0].updatePedal(ads.readADC_SingleEnded(0));
+  pedals[1].updatePedal(ads.readADC_SingleEnded(1));
+  pedals[2].updatePedal(ads.readADC_SingleEnded(2));
+
+  /*
+  //hx711
+  pedals[0].updatePedal(loadcell.read());
+  pedals[1].updatePedal(loadcell.read());
+  pedals[2].updatePedal(loadcell.read());
+  */
+  
 
   unsigned long currentMillis = millis();
 
